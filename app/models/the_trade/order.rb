@@ -78,8 +78,12 @@ class Order < ApplicationRecord
     summary.promote_charges.each do |promote_charge|
       self.order_promotes.build(promote_charge_id: promote_charge.id, promote_id: promote_charge.promote_id, amount: promote_charge.subtotal)
     end
-    summary.serve_charges.each do |serve_charge|
-      self.order_serves.build(serve_charge_id: serve_charge.id, serve_id: serve_charge.serve_id, amount: serve_charge.subtotal)
+    summary.serve_charges.each_with_index do |serve_charge,index|
+      if summary.checked_items[index].good_type == "QuotationItem" && summary.checked_items[index].good&.incoterms == "fob"
+        self.order_serves.build(serve_charge_id: serve_charge.id, serve_id: serve_charge.serve_id, amount: 0)
+      else
+        self.order_serves.build(serve_charge_id: serve_charge.id, serve_id: serve_charge.serve_id, amount: serve_charge.subtotal)
+      end
     end
     compute_sum
   end
