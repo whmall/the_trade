@@ -20,7 +20,7 @@ class TheTradeAdmin::PaymentsController < TheTradeAdmin::BaseController
   end
 
   def create
-    @payment = Payment.new(payment_params.merge(creator_id: the_role_user.id))
+    @payment = Payment.new(payment_params.merge(creator_id: the_role_user.id, team_id: current_manager.team_id&.first))
 
     if @payment.save
       redirect_to admin_payments_url, notice: 'Payment was successfully created.'
