@@ -24,7 +24,7 @@ class SummaryService
     self.discount_price = checked_items.sum { |cart_item| cart_item.discount_price }
     self.retail_price = checked_items.sum { |cart_item| cart_item.retail_price }
     self.final_price = checked_items.sum { |cart_item| cart_item.final_price }
-    self.total_quantity = checked_items.sum { |cart_item| cart_item.total_quantity }
+    self.total_quantity = checked_items.sum { |cart_item| (cart_item.good_type == "QuotationItem" && cart_item.good&.incoterms == "fob") ? 0 : cart_item.total_quantity }
   end
 
   def compute_promote
