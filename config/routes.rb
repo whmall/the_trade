@@ -24,6 +24,8 @@ Rails.application.routes.draw do
       get :refresh, on: :collection
       patch :refund, on: :member
       resources :order_payments
+      resources :order_item_payments
+      resources :order_serve_payments
     end
     resources :order_items
     resources :payments do

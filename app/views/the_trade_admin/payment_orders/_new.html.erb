@@ -14,7 +14,7 @@
       </thead>
 
       <% unless @payment.all_checked? %>
-        <%= render partial: 'orders', collection: @orders, as: :order %>
+        <%= render partial: 'order_items' %>
       <% end %>
 
       <%= render partial: 'index', collection: @payment.payment_orders, as: :payment_order %>

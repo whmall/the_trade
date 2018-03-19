@@ -21,7 +21,6 @@ class TheTradeAdmin::OrdersController < TheTradeAdmin::BaseController
     else
       @order.migrate_from_cart_items
     end
-
     respond_to do |format|
       format.html
       format.json { render json: @order }

@@ -59,7 +59,7 @@ class Payment < ApplicationRecord
   def pending_orders
     if self.payment_method
       buyer_ids = self.payment_method.payment_references.pluck(:buyer_id)
-      Order.where.not(id: self.payment_orders.pluck(:order_id)).where(buyer_id: buyer_ids, payment_status: ['unpaid', 'part_paid'], state: 'active')
+      OrderItem.joins(:order).where.not(id: self.payment_orders.where(entity_type: 'OrderItem').pluck(:entity_id)).where("orders.buyer_id in (?)", buyer_ids.join(",") ).where(payment_status: ['unpaid', 'part_paid'], state: 'active')
     else
       []
     end
@@ -99,6 +99,7 @@ class Payment < ApplicationRecord
 
   def check_state!
     self.check_state
+
     self.save!
   end
 

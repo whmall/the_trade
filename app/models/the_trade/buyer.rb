@@ -21,10 +21,45 @@ class Buyer < ApplicationRecord
     orders.order(overdue_date: :asc).first&.overdue_date
   end
 
+
+  def last_overdue_date_new
+    OrderItem.select(:order_id, :overdue_date).joins('left join orders on orders.id = order_items.order_id').to_pay.default_where('orders.buyer_id': self.id).where('order_items.state != 1').order(overdue_date: :asc).first&.overdue_date
+  end
+
   def self.credit_ids
     PaymentStrategy.where.not(period: 0).pluck(:id)
   end
 
+  # 逾期订单数量
+  def overdue_order_item_count(time)
+    OrderItem.joins(:order).to_pay.default_where('orders.buyer_id': self.id, 'overdue_date-lte': time).where('order_items.overdue_date < ?', Date.today).where('order_items.overdue_date is not null and order_items.state != 1').count
+  end
+
+  # 逾期订单金额(所有逾期订单明细的金额 + 对应订单的本土物流之类的总和) 前提 排除已收的
+  def overdue_order_item_amount(time)
+    amount = 0
+    order_ids = []
+    order_items= OrderItem.select(:order_id, :overdue_date, :amount).joins('left join orders on orders.id = order_items.order_id').to_pay.default_where('orders.buyer_id': self.id, 'overdue_date-lte': time).where('order_items.overdue_date < ?', Date.today).where('order_items.overdue_date is not null and order_items.state != 1')
+    order_items.each do |item|
+      amount += item.amount.to_d
+      order_ids << item.order_id if item.order_id.to_i > 0
+    end
+    order_ids = order_ids.uniq
+    if order_ids.length > 0
+      orders = Order.select(:id, :pure_serve_sum, :received_pure_serve_sum).where(id: order_ids)  #逾期订单明细对应的客户订单
+      orders.each do |order|
+        amount += order.pure_serve_sum.to_d - order.received_pure_serve_sum.to_d
+      end
+    end
+
+    return amount
+  end
+
+
+  # 应收订单数量
+  def rereceive_overe_order_item_count
+    OrderItem.joins(:order).to_pay.default_where('orders.buyer_id': self.id).where('order_items.state != 1').count
+  end
 end
 
 

@@ -1,0 +1,44 @@
+<div class="ui modal" id="payment_logs">
+  <i class="close icon"></i>
+  <div class="header">
+    <span style="color: #0d71bb">Payment Logs(服务费)</span>
+  </div>
+  <div class="content">
+    <table class="ui basic red table">
+      <thead>
+      <tr>
+        <th>Payment ID</th>
+        <th><%= Payment.human_attribute_name(:type) %></th>
+        <th><%= Payment.human_attribute_name(:total_amount) %></th>
+        <th>可核销</th>
+        <th><%= Payment.human_attribute_name(:created_at) %></th>
+        <th>预核销</th>
+        <th>核销时间</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% unless @order.all_paid? %>
+        <%= render partial: 'payments', collection: @payments, as: :payment %>
+      <% end %>
+
+      <%= render partial: 'payment_orders', collection: @order.payment_orders.where(order_id: nil), as: :payment_order %>
+      </tbody>
+      <tfoot>
+      <tr>
+        <th colspan="5"></th>
+        <th class="center aligned">
+          预核销合计：<span id="checked_amount"><%= @order.init_serve_received_amount %></span>
+        </th>
+        <th colspan="2"></th>
+      </tr>
+      </tfoot>
+    </table>
+
+  </div>
+</div>
+
+
+
+
+
