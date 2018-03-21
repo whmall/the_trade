@@ -9,24 +9,32 @@ class TheTradeAdmin::PaymentOrdersController < TheTradeAdmin::BaseController
 
   def create
     @payment_order = @payment.payment_orders.build(payment_order_params)
-    if @payment_order.confirm!
-      @orders = @payment.pending_orders
-      @payment.save_audits operator_type: 'User', operator_id: current_user.id, include: [:payment_orders]
-      respond_to do |format|
-        format.js
+    begin
+      if @payment_order.confirm!
+        @orders = @payment.pending_orders
+        @payment.save_audits operator_type: 'User', operator_id: current_user.id, include: [:payment_orders]
+        respond_to do |format|
+          format.js
+        end
+      else
+        render 'create_fail'
       end
-    else
+    rescue => e
       render 'create_fail'
     end
   end
 
   def update
-    @payment_order.assign_attributes payment_order_params
-    if @payment_order.confirm!
-      respond_to do |format|
-        format.js
+    begin
+      @payment_order.assign_attributes payment_order_params
+      if @payment_order.confirm!
+        respond_to do |format|
+          format.js
+        end
+      else
+        render 'create_fail'
       end
-    else
+    rescue => e
       render 'create_fail'
     end
   end
