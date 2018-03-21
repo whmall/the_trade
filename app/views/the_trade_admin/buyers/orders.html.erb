@@ -32,9 +32,20 @@
   </table>
 
   <div class="ui segment top attached">
-    <p>
-      <%= link_to 'Send Payment Reminder', remind_admin_buyers_path, method: :put, class: 'ui green button', id: 'remind_link' %>
-    </p>
+    <table class="ui bottom attached table">
+      <tr>
+        <td><%= link_to 'Send Payment Reminder', remind_admin_buyers_path, method: :put, class: 'ui green button', id: 'remind_link' %></td>
+        <td style="float:right" >
+          <%= search_form_with scope: :q do |f| %>
+              <div class="fields">
+                <%= f.text_field :'search_no' ,placeholder: 'Order No.  OR Order Item No.' , style:'width:300px'%>
+                <%= f.submit 'Search', class:'ui button blue' %>
+              </div>
+          <% end %>
+        </td>
+      </tr>
+    </table>
+
   </div>
 
   <table class="ui bottom attached table">
@@ -53,49 +64,147 @@
     </thead>
 
     <tbody>
-    <% @orders.each do |order| %>
-      <tr>
-        <td>
-          <% unless order.cancel? || order.init_received_amount >= order.amount %>
-            <%= check_box_tag(:order_id, order.id) %>
-          <% end %>
-        </td>
-        <td>
-          <%= order.uuid %>
-          <% if order.cancel? %>
-          <label class="ui red label">Canceled</label>
-          <% end %>
-        </td>
-        <td><%= order.charger&.name %></td>
-        <td><%= order.created_at %></td>
-        <td>
-          <% order.order_items.each do |order_item| %>
-            <p><%= order_item.chemical.name.truncate(50) %></p>
-            <p><%= order_item.chemical.cas %></p>
-          <% end %>
-        </td>
-        <td class="<%= active_assert(order.overdue_date && order.overdue_date < Date.today, expected: 'error', unexpected: '') %>">
-          <%= order.overdue_date %>
-        </td>
-        <td><%= order.amount %> / <%= order.unreceived_amount %></td>
-        <td><%= order.remind_counter %></td>
-        <td>
-          <% if order.exists_payments && !order.cancel? %>
-            <%= link_to new_admin_order_order_payment_path(order.id), remote: true, class: 'ui icon green button' do %>
-              <i class="payment icon"></i>
+    <% order_id = 0 %>
+    <% order_detail_num = 0 %>
+    <% @order_items.each do |order| %>
+      <% if !order.order&.cancel? && order.order&.pure_serve_sum.to_d > 0 &&  order.order&.pure_serve_sum.to_d > order.order&.received_pure_serve_sum.to_d  %>
+        <% if order_id != order.order_id.to_i %>
+          <% order_id = order.order_id.to_i %>
+          <tr class="positive">
+            <td>
+              <% order_detail_num = 0 %>
+            </td>
+            <td>
+              <%= order.order&.uuid %>
+              <% if order.order&.cancel? %>
+                  <label class="ui red label">Canceled</label>
+              <% end %>
+            </td>
+            <td><%= order.order&.charger&.name %></td>
+            <td><%= order.created_at %></td>
+            <td>
+              <b>总服务费(本地物流,银行转账...):</b>
+              <% order.order&.order_items.each do |item|%>
+                <p><%= item.order_item_no%></p>
+              <% end %>
+            </td>
+            <td class="<%= active_assert(order.overdue_date && order.overdue_date < Date.today, expected: 'error', unexpected: '') %>">
+              <%= order.overdue_date %>
+            </td>
+            <td><%= order.order&.pure_serve_sum %> / <%= order.order&.pure_serve_sum.to_d -  order.order&.received_pure_serve_sum.to_d %></td>
+            <td><%= order.remind_counter %></td>
+            <td>
+              <% if order.order&.exists_payments && !order.order&.cancel? %>
+                  <%= link_to new_admin_order_order_serve_payment_path(order.order&.id), remote: true, class: 'ui icon green button' do %>
+                      <i class="payment icon"></i>
+                  <% end %>
+              <% elsif !order.order&.cancel? %>
+                  <%= link_to new_admin_order_order_serve_payment_path(order.order&.id), remote: true, class: 'ui icon grey button' do %>
+                      <i class="payment icon"></i>
+                  <% end %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+        <tr  class="<%= active_assert(order.overdue_date && order.overdue_date < Date.today, expected: 'error', unexpected: '') %>">
+          <td>
+            <% unless order.cancel? || order.received_amount.to_d >= order.amount.to_d %>
+                <%= check_box_tag(:order_item_id, order.id) %>
             <% end %>
-          <% elsif !order.cancel? %>
-            <%= link_to new_admin_order_order_payment_path(order.id), remote: true, class: 'ui icon grey button' do %>
-              <i class="payment icon"></i>
+          </td>
+          <td>
+            <%= order.order_item_no %>
+            <br/>
+            <p >
+              <span  style="color: green" >
+                <i><%= order.order&.uuid %></i>
+              </span>
+            </p>
+            <% if order.cancel? %>
+                <label class="ui red label">Canceled</label>
             <% end %>
-          <% end %>
-        </td>
-      </tr>
+          </td>
+          <td><%= order.order&.charger&.name %></td>
+          <td><%= order.created_at %></td>
+          <td>
+            <p><%= order.chemical.name.truncate(50) %></p>
+            <p><%= order.chemical.cas %></p>
+          </td>
+          <td class="<%= active_assert(order.overdue_date && order.overdue_date < Date.today, expected: 'error', unexpected: '') %>">
+            <%= order.overdue_date %>
+          </td>
+          <td>
+            <%= order.amount %> / <%= order.amount.to_d -  order.received_amount.to_d %>
+            <% order_detail_num =  order_detail_num + 1 %>
+            <% if order_detail_num == 1 %>
+                <br/>
+                <br/>
+                本土运费:<%= order.order&.pure_serve_sum %> / <%= order.order&.pure_serve_sum.to_d -  order.order&.received_pure_serve_sum.to_d %>
+            <% end %>
+
+          </td>
+          <td><%= order.remind_counter %></td>
+          <td>
+            <% if order.order_item_exists_payments && !order.cancel? %>
+                <%= link_to new_admin_order_order_item_payment_path(order.id), remote: true, class: 'ui icon green button' do %>
+                    <i class="payment icon"></i>
+                <% end %>
+            <% elsif !order.cancel? %>
+                <%= link_to new_admin_order_order_item_payment_path(order.id), remote: true, class: 'ui icon grey button' do %>
+                    <i class="payment icon"></i>
+                <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% else %>
+        <tr class="<%= active_assert(order.overdue_date && order.overdue_date < Date.today, expected: 'error', unexpected: '') %>" >
+          <td>
+            <% unless order.cancel? || order.received_amount.to_d >= order.amount.to_d %>
+                <%= check_box_tag(:order_item_id, order.id) %>
+            <% end %>
+          </td>
+          <td>
+            <%= order.order_item_no %>
+            <br/>
+            <p >
+              <span  style="color: green" >
+                <i><%= order.order&.uuid %></i>
+              </span>
+            </p>
+            <% if order.cancel? %>
+                <label class="ui red label">Canceled</label>
+            <% end %>
+          </td>
+          <td><%= order.order&.charger&.name %></td>
+          <td><%= order.created_at %></td>
+          <td>
+            <p><%= order.chemical.name.truncate(50) %></p>
+            <p><%= order.chemical.cas %></p>
+          </td>
+          <td class="<%= active_assert(order.overdue_date && order.overdue_date < Date.today, expected: 'error', unexpected: '') %>">
+            <%= order.overdue_date %>
+          </td>
+          <td><%= order.amount %> / <%= order.amount.to_d -  order.received_amount.to_d %></td>
+          <td><%= order.remind_counter %></td>
+          <td>
+            <% if order.order_item_exists_payments && !order.cancel? %>
+                <%= link_to new_admin_order_order_item_payment_path(order.id), remote: true, class: 'ui icon green button' do %>
+                    <i class="payment icon"></i>
+                <% end %>
+            <% elsif !order.cancel? %>
+                <%= link_to new_admin_order_order_item_payment_path(order.id), remote: true, class: 'ui icon grey button' do %>
+                    <i class="payment icon"></i>
+                <% end %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+
     <% end %>
     </tbody>
   </table>
 
-  <%= paginate @orders %>
+  <%= paginate @order_items %>
 </div>
 
 <div class="ui modal" id="alert_modal">
@@ -116,6 +225,15 @@
 </div>
 
 <script>
+  function getCheckedItemIds() {
+    var ids = [];
+    $('input[name="order_item_id"]:checked').each(function(){
+      ids.push($(this).val())
+    });
+    ids = ids.join(',');
+    return ids
+  }
+
   function getCheckedIds() {
     var ids = [];
     $('input[name="order_id"]:checked').each(function(){
@@ -125,10 +243,17 @@
     return ids
   }
 
+
+  $('input[name="order_item_id"]').change(function(){
+    var remind_link = new URL($('#remind_link')[0].href);
+    //var batch_link = new URL($('#batch_reconcile')[0].attr('href'));
+    $('#remind_link').attr('href', remind_link.pathname + '?order_ids=' + getCheckedIds()+"&order_item_id=" + getCheckedItemIds() );
+
+  });
+
   $('input[name="order_id"]').change(function(){
     var remind_link = new URL($('#remind_link')[0].href);
     //var batch_link = new URL($('#batch_reconcile')[0].attr('href'));
-
-    $('#remind_link').attr('href', remind_link.pathname + '?order_ids=' + getCheckedIds());
+    $('#remind_link').attr('href', remind_link.pathname + '?order_ids=' + getCheckedIds()+"&order_item_id=" + getCheckedItemIds() );
   });
 </script>

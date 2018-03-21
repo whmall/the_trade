@@ -1,0 +1,21 @@
+<tr id="unchecked_<%= payment.id %>">
+  <td style="color: #999;">
+    <%= payment.payment_uuid %>
+    <%= form_with url: admin_order_order_item_payments_path(@order_item), id: "new_payment_#{payment.id}" do |f| %>
+    <% end %>
+  </td>
+  <td><%= payment.type %></td>
+  <td><%= payment.total_amount %></td>
+  <td><%= payment.unchecked_amount %></td>
+  <td><%= payment.created_at %></td>
+  <td>
+    <%= hidden_field_tag 'payment_order[payment_id]', payment.id, form: "new_payment_#{payment.id}" %>
+    <div class="ui  form">
+      <%= number_field_tag 'payment_order[check_amount]', @order_item.unreceived_amount <= (payment.unchecked_amount + 1) ? @order_item.unreceived_amount : payment.unchecked_amount, placeholder: 'Result:',  step: '0.01', form: "new_payment_#{payment.id}" %>
+    </div>
+  </td>
+  <td></td>
+  <td>
+    <%= submit_tag '预核销', form: "new_payment_#{payment.id}", class: 'ui  blue button mini'%>
+  </td>
+</tr>

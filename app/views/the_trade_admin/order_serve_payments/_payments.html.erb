@@ -1,7 +1,7 @@
 <tr id="unchecked_<%= payment.id %>">
   <td style="color: #999;">
     <%= payment.payment_uuid %>
-    <%= form_with url: admin_order_order_payments_path(@order), id: "new_payment_#{payment.id}" do |f| %>
+    <%= form_with url: admin_order_order_serve_payments_path(@order), id: "new_payment_#{payment.id}" do |f| %>
     <% end %>
   </td>
   <td><%= payment.type %></td>
@@ -11,7 +11,7 @@
   <td>
     <%= hidden_field_tag 'payment_order[payment_id]', payment.id, form: "new_payment_#{payment.id}" %>
     <div class="ui  form">
-    <%= number_field_tag 'payment_order[check_amount]', @order.unreceived_amount <= (payment.unchecked_amount + 1) ? @order.unreceived_amount : payment.unchecked_amount, placeholder: 'Result:', step: '0.01', form: "new_payment_#{payment.id}" %>
+    <%= number_field_tag 'payment_order[check_amount]', @order.unreceived_pure_serve_sum <= (payment.unchecked_amount + 1) ? @order.unreceived_pure_serve_sum : payment.unchecked_amount, placeholder: 'Result:', step: '0.01', form: "new_payment_#{payment.id}" %>
     </div>
   </td>
   <td></td>

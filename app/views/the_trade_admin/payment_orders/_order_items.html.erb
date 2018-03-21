@@ -1,0 +1,76 @@
+<% order_id = 0 %>
+<% @orders.each do |order|%>
+  <% if order.order_id != order_id && order.order.payment_orders.blank? %>
+    <% order_id = order.order_id  %>
+    <tr id="unchecked_<%= order.order_id %>" class="negative">
+      <td>
+        <%= order.id %>
+        <%= form_with url: admin_payment_payment_orders_path(@payment), id: "new_payment_#{order.order_id}" do |f| %>
+        <% end %>
+      </td>
+      <td>
+        <%= hidden_field_tag 'payment_order[entity_type]', 'Order', form: "new_payment_#{order.order_id}" %>
+        <%= hidden_field_tag 'payment_order[entity_id]',order.order_id , form: "new_payment_#{order.order_id}" %>
+        <%= hidden_field_tag 'payment_type','serve' , form: "new_payment_#{order.order_id}" %>
+
+        <%= link_to order.order.uuid, admin_order_path(order.order&.id) %>
+        <span style="color: #999;">（<%= order.order&.charger&.name %>）</span>
+        <span style="color: #999;">（总服务费）</span>
+        <br/>
+        <% order.order&.order_items.each do |item|%>
+            Item: <%= item.id%><br/>
+        <% end %>
+      </td>
+      <td>
+        <% if order.order&.payment_memo_id %>
+            <%= link_to 'Download', attachment_url(order.order, :payment_memo), download: "payment_memo_#{order.id}", target: '_self' %>
+        <% end %>
+      </td>
+      <td><%= order.order.pure_serve_sum %></td>
+      <td>
+        <div class="ui input">
+          <%= number_field_tag 'payment_order[check_amount]', order.order.unreceived_pure_serve_sum, placeholder: 'Result:', class: 'three wide field', step: '0.01', form: "new_payment_#{order.order_id}" , style: "width:100px" %>
+        </div>
+      </td>
+      <td></td>
+      <td>
+        <%= submit_tag '核销', class: 'ui mini grey button', form: "new_payment_#{order.order_id}" %>
+      </td>
+    </tr>
+  <% end %>
+
+  <tr id="unchecked_<%= order.id %>">
+    <td>
+      Item:<%= order.id %>
+      <%= form_with url: admin_payment_payment_orders_path(@payment), id: "new_payment_#{order.id}" do |f| %>
+      <% end %>
+      <%= hidden_field_tag 'payment_order[entity_type]', 'OrderItem', form: "new_payment_#{order.id}" %>
+      <%= hidden_field_tag 'payment_order[entity_id]',order.id , form: "new_payment_#{order.id}" %>
+    </td>
+    <td>
+      <%= link_to order.order_item_no, admin_order_path(order.order&.id) %>
+      <span style="color: #999;">（<%= order.order&.charger&.name %>）</span>
+      <br/>
+      <%= order.chemical.name.truncate(50) %>
+      <br/>
+      <%= order.chemical.cas %>
+
+    </td>
+    <td>
+      <% if order.order&.payment_memo_id %>
+          <%= link_to 'Download', attachment_url(order.order, :payment_memo), download: "payment_memo_#{order.id}", target: '_self' %>
+      <% end %>
+    </td>
+    <td><%= order.amount %></td>
+    <td>
+      <div class="ui input">
+        <%= number_field_tag 'payment_order[check_amount]', order.unreceived_amount, placeholder: 'Result:', class: 'three wide field', step: '0.01', form: "new_payment_#{order.id}" , style: "width:100px" %>
+      </div>
+    </td>
+    <td></td>
+    <td>
+      <%= submit_tag '核销', class: 'ui mini grey button', form: "new_payment_#{order.id}" %>
+    </td>
+  </tr>
+<% end %>
+

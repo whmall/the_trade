@@ -1,4 +1,8 @@
 class OrderItem < ApplicationRecord
+  include ThePayment
+
+  has_many :payment_orders, as: :entity
+
   belongs_to :order, autosave: true, inverse_of: :order_items
   belongs_to :cart_item, optional: true, autosave: true
   belongs_to :good, polymorphic: true, optional: true
@@ -6,6 +10,8 @@ class OrderItem < ApplicationRecord
   has_many :order_promotes, autosave: true
   has_many :order_serves, autosave: true
   has_many :serves, through: :order_serves
+
+  scope :to_pay, -> { where(payment_status: ['unpaid', 'part_paid']) }
 
   composed_of :promote,
               class_name: 'PromoteFee',
@@ -41,6 +47,17 @@ class OrderItem < ApplicationRecord
     end
   end
   after_update_commit :sync_amount, if: -> { saved_change_to_amount? }
+
+
+  enum payment_status: {
+      unpaid: 0,
+      part_paid: 1,
+      all_paid: 2,
+      refunding: 3,
+      refunded: 4,
+      denied: 5
+  }
+
 
   def sync_amount
     order.compute_sum

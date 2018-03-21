@@ -8,9 +8,21 @@ module ThePayment
     self.amount.to_d - self.received_amount.to_d
   end
 
+  # 未收款服务费
+  def unreceived_pure_serve_sum
+    self.pure_serve_sum.to_d - self.received_pure_serve_sum.to_d
+  end
+
+
   def init_received_amount
     self.payment_orders.sum(:check_amount)
   end
+
+
+  def init_serve_received_amount
+    self.payment_orders.where(order_id: nil).sum(:check_amount)
+  end
+
 
   def pending_payments
     Payment.where.not(id: self.payment_orders.pluck(:payment_id)).where(payment_method_id: self.buyer.payment_method_ids, state: ['init', 'part_checked'])
@@ -19,6 +31,20 @@ module ThePayment
   def exists_payments
     Payment.where.not(id: self.payment_orders.pluck(:payment_id)).exists?(payment_method_id: self.buyer.payment_method_ids, state: ['init', 'part_checked'])
   end
+
+
+  def order_item_exists_payments
+    Payment.where.not(id: self.payment_orders.pluck(:payment_id)).exists?(payment_method_id: self.order&.buyer.payment_method_ids, state: ['init', 'part_checked'])
+  end
+
+  def order_item_pending_payments
+    Payment.where.not(id: self.payment_orders.pluck(:payment_id)).where(payment_method_id: self.order.buyer.payment_method_ids, state: ['init', 'part_checked'])
+  end
+
+
+
+
+
 
   def confirm_paid!
     self.order_items.each do |oi|
@@ -78,6 +104,22 @@ module ThePayment
 
   def check_state!
     self.check_state
+    self.save!
+  end
+
+
+  def check_state_detail
+    if self.received_amount.to_d >= self.amount
+      self.payment_status = 'all_paid'
+    elsif self.received_amount.to_d > 0 && self.received_amount.to_d < self.amount
+      self.payment_status = 'part_paid'
+    elsif self.received_amount.to_d <= 0
+      self.payment_status = 'unpaid'
+    end
+  end
+
+  def check_state_detail!
+    self.check_state_detail
     self.save!
   end
 
