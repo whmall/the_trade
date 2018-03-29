@@ -7,9 +7,15 @@ class TheTradeAdmin::PaymentsController < TheTradeAdmin::BaseController
 
   def index
     @payments = Payment.default_where(params.permit(:type, :state, :'payment_orders.state', :id))
-      .default_where(params.fetch(:q, {}).permit(:'buyer_name-like', :buyer_identifier, :buyer_bank, :payment_uuid, :'orders.uuid'))
+      .default_where(params.fetch(:q, {}).permit(:'buyer_name-like', :buyer_identifier, :buyer_bank, :payment_uuid))
       .permit_with(the_role_user)
-      .order(id: :desc).page(params[:page])
+    if params[:q].present?
+      if params[:q][:uuid].present?
+        @payments = @payments.joins("left join payment_orders a on a.payment_id = payments.id left join orders b on b.id = a.entity_id and a.entity_type = 'Order' left join order_items c on c.id = a.entity_id and a.entity_type = 'OrderItem' ").where('b.uuid = ? or c.order_item_no = ?', params[:q][:uuid], params[:q][:uuid])
+      end
+    end
+    @payments = @payments.order(id: :desc).page(params[:page])
+
   end
 
   def show
