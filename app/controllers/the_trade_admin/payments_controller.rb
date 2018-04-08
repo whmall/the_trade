@@ -6,7 +6,7 @@ class TheTradeAdmin::PaymentsController < TheTradeAdmin::BaseController
   end
 
   def index
-    @payments = Payment.default_where(params.permit(:type, :state, :'payment_orders.state', :id))
+    @payments = Payment.default_where(params.permit(:type, :state, :'payment_orders.state', :id, :team_id))
       .default_where(params.fetch(:q, {}).permit(:'buyer_name-like', :buyer_identifier, :buyer_bank, :payment_uuid))
       .permit_with(the_role_user)
     if params[:q].present?
