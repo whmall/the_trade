@@ -11,7 +11,7 @@ class TheTradeAdmin::PaymentsController < TheTradeAdmin::BaseController
       .permit_with(the_role_user)
     if params[:q].present?
       if params[:q][:uuid].present?
-        @payments = @payments.joins("left join payment_orders a on a.payment_id = payments.id left join orders b on b.id = a.entity_id and a.entity_type = 'Order' left join order_items c on c.id = a.entity_id and a.entity_type = 'OrderItem' ").where('b.uuid = ? or c.order_item_no = ?', params[:q][:uuid], params[:q][:uuid])
+        @payments = @payments.joins("left join payment_orders a on a.payment_id = payments.id left join orders b on b.id = a.entity_id and a.entity_type = 'Order' left join order_items c on c.id = a.entity_id and a.entity_type = 'OrderItem' ").where('b.uuid = ? or c.order_item_no = ? OR b.invoice = ?', params[:q][:uuid], params[:q][:uuid],  params[:q][:uuid])
       end
     end
     @payments = @payments.order(id: :desc).page(params[:page])

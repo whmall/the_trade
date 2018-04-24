@@ -47,6 +47,7 @@ module ThePayment
 
 
   def confirm_paid!
+    binding.pry
     self.order_items.each do |oi|
       oi.confirm_paid!
     end

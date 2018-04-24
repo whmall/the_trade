@@ -38,7 +38,7 @@
         <td style="float:right" >
           <%= search_form_with scope: :q do |f| %>
               <div class="fields">
-                <%= f.text_field :'search_no' ,placeholder: 'Order No.  OR Order Item No.' , style:'width:300px'%>
+                <%= f.text_field :'search_no' ,placeholder: 'Order No.  OR Order Item No. OR Invoice' , style:'width:300px'%>
                 <%= f.submit 'Search', class:'ui button blue' %>
               </div>
           <% end %>

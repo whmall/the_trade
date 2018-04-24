@@ -20,7 +20,7 @@ class TheTradeAdmin::BuyersController < TheTradeAdmin::BaseController
     # @orders = @buyer.orders.includes(crm_performs: :manager).to_pay.order(overdue_date: :asc).page(params[:page])
     search_params = params.fetch(:q, {})
     if search_params[:search_no].present?
-      @order_items = OrderItem.joins(:order).to_pay.default_where('orders.buyer_id': @buyer.id).where("order_items.order_item_no = ? or orders.uuid = ?", search_params[:search_no].strip,  search_params[:search_no].strip).where('order_items.state != 1').order(overdue_date: :asc).page(params[:page])
+      @order_items = OrderItem.joins(:order).to_pay.default_where('orders.buyer_id': @buyer.id).where("order_items.order_item_no = ? or orders.uuid = ? or orders.invoice = ?  ", search_params[:search_no].strip,  search_params[:search_no].strip, search_params[:search_no].strip).where('order_items.state != 1').order(overdue_date: :asc).page(params[:page])
     else
       @order_items = OrderItem.joins(:order).to_pay.default_where('orders.buyer_id': @buyer.id).where('order_items.state != 1').order(overdue_date: :asc).page(params[:page])
     end
