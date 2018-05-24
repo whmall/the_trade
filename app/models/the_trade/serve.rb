@@ -24,10 +24,11 @@ class Serve < ApplicationRecord
     else
       range = { 'min-lte': amount.to_d, 'max-gt': amount.to_d }
     end
+    
 
     query = range.merge(extra_hash.slice(*extra))
     charge = self.charges.default_where(query).first
-    if charge 
+    if charge && !(amount.to_d == 0 && self.id == 5)
       charge.subtotal = charge.final_price(amount)
       charge.default_subtotal = charge.subtotal
     else
