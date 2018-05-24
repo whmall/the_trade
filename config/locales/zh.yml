@@ -65,6 +65,8 @@ zh:
       serve/type:
         QuantityServe: 总重量
         NumberServe: 购买件数
+        TpServe: 单件TP价
+        ExportRebateServe: 产品成本价
       serve/scope:
         total: 全部应用
         single: 单独应用

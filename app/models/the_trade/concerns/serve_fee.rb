@@ -2,13 +2,14 @@
 # good
 class ServeFee
   attr_reader :good, :number, :buyer,
-              :extra, :charges
+              :extra, :charges, :incoterms
 
   def initialize(good_type, good_id, number = 1, buyer_id = nil, extra = {})
     @good = good_type.constantize.unscoped.find good_id
     @number = number
     @buyer = Buyer.find(buyer_id) if buyer_id
     @extra = extra.merge! good.extra
+    @incoterms = good.try(:incoterms) || @buyer.incoterms
     verbose_fee
   end
 
@@ -28,10 +29,16 @@ class ServeFee
   end
 
   def get_charge(serve)
-    if serve.is_a? QuantityServe
+    if serve.name == "Global Shipping" && incoterms == "fob"
+      charge = 0
+    elsif serve.is_a? QuantityServe
       charge = serve.compute_price(good.unified_quantity * number, extra)
     elsif serve.is_a? NumberServe
       charge = serve.compute_price(number, extra)
+    elsif serve.is_a? TpServe
+      charge = serve.compute_price(good.price.to_d, extra)  
+    elsif serve.is_a? ExportRebateServe
+      charge = good.declare.present? ?  (good.declare == "off_declare" ? 0 :  good.pure_price / 1.16 * 0.09 * -1  )  : serve.compute_price(good.pure_price, extra) * good.pure_price / 1.16 * 0.09 * -1  
     else
       charge = serve.compute_price(number, extra)
     end
