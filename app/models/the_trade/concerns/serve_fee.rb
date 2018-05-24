@@ -39,8 +39,8 @@ class ServeFee
     elsif serve.is_a? TpServe
       charge = serve.compute_price(good.price.to_d, extra)
     elsif serve.is_a? ExportRebateServe
-      charge = serve.compute_price(good.pure_price, extra)
-      charge.subtotal = good.declare.present? ?  (good.declare == "off_declare" ? 0 :  good.pure_price / 1.16 * 0.09 * -1  )  : charge.subtotal * good.pure_price / 1.16 * 0.09 * -1  
+      charge = serve.compute_price(good.price.to_d * number, extra)
+      charge.subtotal = good.declare.present? ?  (good.declare == "off_declare" ? 0 :  good.price.to_d * number / 1.16 * 0.09 * -1  )  : charge.subtotal * good.price.to_d * number / 1.16 * 0.09 * -1  
     else
       charge = serve.compute_price(number, extra)
     end
