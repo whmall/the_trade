@@ -30,7 +30,8 @@ class ServeFee
 
   def get_charge(serve)
     if serve.name == "Global Shipping" && incoterms == "fob"
-      charge = 0
+      charge = serve.charges.build
+      charge.subtotal = 0
     elsif serve.is_a? QuantityServe
       charge = serve.compute_price(good.unified_quantity * number, extra)
     elsif serve.is_a? NumberServe
@@ -38,7 +39,8 @@ class ServeFee
     elsif serve.is_a? TpServe
       charge = serve.compute_price(good.price.to_d, extra)
     elsif serve.is_a? ExportRebateServe
-      charge = good.declare.present? ?  (good.declare == "off_declare" ? 0 :  good.pure_price / 1.16 * 0.09 * -1  )  : serve.compute_price(good.pure_price, extra) * good.pure_price / 1.16 * 0.09 * -1  
+      charge = serve.compute_price(good.pure_price, extra)
+      charge.subtotal = good.declare.present? ?  (good.declare == "off_declare" ? 0 :  good.pure_price / 1.16 * 0.09 * -1  )  : charge.subtotal * good.pure_price / 1.16 * 0.09 * -1  
     else
       charge = serve.compute_price(number, extra)
     end
