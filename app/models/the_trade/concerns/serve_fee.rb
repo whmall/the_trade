@@ -8,10 +8,12 @@ class ServeFee
     @good = good_type.constantize.unscoped.find good_id
     @number = number
     @buyer = Buyer.find(buyer_id) if buyer_id
+    @incoterms = good.try(:incoterms) || Company.find_by(id:@buyer&.id)&.incoterms
     @extra = extra.merge! good.extra
-    @incoterms = good.try(:incoterms) || Company.find_by(id:@buyer.id)&.incoterms
+   
     p @incoterms
     p "abd"*100
+    
     verbose_fee
   end
 

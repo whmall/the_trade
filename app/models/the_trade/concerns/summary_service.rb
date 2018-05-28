@@ -7,8 +7,10 @@ class SummaryService
 
   def initialize(_checked_items, buyer_id: nil, extra: {})
     @checked_items = _checked_items
-    @buyer = Buyer.find(buyer_id) if buyer_id
-    @incoterms = Company.find_by(id:@buyer.id)&.incoterms
+    if buyer_id
+      @buyer = Buyer.find(buyer_id) 
+      @incoterms = Company.find_by(id:@buyer&.id)&.incoterms
+    end
     p @incoterms
     p "124"*100
     @extra = extra
@@ -27,7 +29,7 @@ class SummaryService
     self.discount_price = checked_items.sum { |cart_item| cart_item.discount_price }
     self.retail_price = checked_items.sum { |cart_item| cart_item.retail_price }
     self.final_price = checked_items.sum { |cart_item| cart_item.final_price }
-    self.total_quantity = checked_items.sum { |cart_item| (cart_item.good_type == "QuotationItem" && cart_item.good&.incoterms == "fob") || ( cart_item.good_type != "QuotationItem" && incoterms == "fob") ? 0 : cart_item.total_quantity }
+    self.total_quantity = checked_items.sum { |cart_item| (cart_item.good_type == "QuotationItem" && cart_item.good&.incoterms == "fob") || ( cart_item.good_type != "QuotationItem" && @incoterms == "fob") ? 0 : cart_item.total_quantity }
   end
 
   def compute_promote
