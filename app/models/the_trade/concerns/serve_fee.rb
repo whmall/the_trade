@@ -9,7 +9,9 @@ class ServeFee
     @number = number
     @buyer = Buyer.find(buyer_id) if buyer_id
     @extra = extra.merge! good.extra
-    @incoterms = good.try(:incoterms) || @buyer.incoterms
+    @incoterms = good.try(:incoterms) || @buyer&.incoterms
+    p @buyer&.incoterms
+    p "abd"*100
     verbose_fee
   end
 
