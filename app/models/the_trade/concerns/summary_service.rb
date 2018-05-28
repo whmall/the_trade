@@ -8,7 +8,7 @@ class SummaryService
   def initialize(_checked_items, buyer_id: nil, extra: {})
     @checked_items = _checked_items
     @buyer = Buyer.find(buyer_id) if buyer_id
-    @incoterms = @buyer&.incoterms
+    @incoterms = Company.find_by(id:@buyer.id)&.incoterms
     p @incoterms
     p "124"*100
     @extra = extra

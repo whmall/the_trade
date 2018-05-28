@@ -9,8 +9,8 @@ class ServeFee
     @number = number
     @buyer = Buyer.find(buyer_id) if buyer_id
     @extra = extra.merge! good.extra
-    @incoterms = good.try(:incoterms) || @buyer&.incoterms
-    p @buyer&.incoterms
+    @incoterms = good.try(:incoterms) || Company.find_by(id:@buyer.id)&.incoterms
+    p @incoterms
     p "abd"*100
     verbose_fee
   end
@@ -42,7 +42,7 @@ class ServeFee
       charge = serve.compute_price(good.price.to_d, extra)
     elsif serve.is_a? ExportRebateServe
       charge = serve.compute_price(good.price.to_d * number, extra)
-      charge.subtotal = good.declare.present? ?  (good.declare == "off_declare" ? 0 :  good.price.to_d * number / 1.16 * 0.09 * -1  )  : charge.subtotal * good.price.to_d * number / 1.16 * 0.09 * -1  
+      charge.subtotal = good.try(:declare).present? ?  (good&.declare == "off_declare" ? 0 :  good.price.to_d * number / 1.16 * 0.09 * -1  )  : charge.subtotal * good.price.to_d * number / 1.16 * 0.09 * -1  
     else
       charge = serve.compute_price(number, extra)
     end
