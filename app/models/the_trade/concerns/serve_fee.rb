@@ -41,10 +41,10 @@ class ServeFee
     elsif serve.is_a? NumberServe
       charge = serve.compute_price(number, extra)
     elsif serve.is_a? TpServe
-      charge = serve.compute_price(good.price.to_d, extra)
+      charge = serve.compute_price(good.import_price.to_d, extra)
     elsif serve.is_a? ExportRebateServe
-      charge = serve.compute_price(good.price.to_d * number, extra)
-      charge.subtotal = good.try(:declare).present? ?  (good&.declare == "off_declare" ? 0 :  good.price.to_d * number / 1.16 * 0.09 * -1  )  : charge.subtotal * good.price.to_d * number / 1.16 * 0.09 * -1  
+      charge = serve.compute_price(good.import_price.to_d * number, extra)
+      charge.subtotal = good.try(:declare).present? ?  (good&.declare == "off_declare" ? 0 :  good.import_price.to_d * number / 1.16 * 0.09 * -1  )  : charge.subtotal * good.import_price.to_d * number / 1.16 * 0.09 * -1  
     else
       charge = serve.compute_price(number, extra)
     end
