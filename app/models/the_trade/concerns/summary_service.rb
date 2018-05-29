@@ -11,8 +11,6 @@ class SummaryService
       @buyer = Buyer.find(buyer_id) 
       @incoterms = Company.find_by(id:@buyer&.id)&.incoterms
     end
-    p @incoterms
-    p "124"*100
     @extra = extra
     compute_total
     compute_promote
