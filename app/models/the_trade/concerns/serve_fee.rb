@@ -38,9 +38,12 @@ class ServeFee
     elsif serve.is_a? NumberServe
       charge = serve.compute_price(number, extra)
     elsif serve.is_a? TpServe
+      # 由于后台的Handling Fee是根据declare来的，所以默认给个值让他触发。
       if good.try(:declare).present? && good&.declare == "on_declare"
         charge = serve.compute_price(900, extra)
-      else
+      elsif good.try(:declare).present? && good&.declare == "off_declare"
+        charge = serve.compute_price(700, extra)
+      else 
         charge = serve.compute_price(good.import_price.to_d, extra)
       end
     elsif serve.is_a? ExportRebateServe
